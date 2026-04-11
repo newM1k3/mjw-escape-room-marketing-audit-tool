@@ -1,60 +1,61 @@
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
 
-const statusMessages = [
-  'Scanning Google Listing...',
-  'Checking Website SEO...',
-  'Analyzing Review Velocity...',
-  'Evaluating Social Presence...',
-  'Generating Your Score...',
+const STEPS = [
+  'Connecting to Google PageSpeed Insights...',
+  'Analyzing mobile performance...',
+  'Checking SSL and security headers...',
+  'Auditing SEO meta tags...',
+  'Calculating your scores...',
 ];
 
 export const LoadingState = () => {
-  const [currentMessage, setCurrentMessage] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
-    const messageInterval = setInterval(() => {
-      setCurrentMessage((prev) => (prev + 1) % statusMessages.length);
-    }, 400);
-
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) return 100;
-        return prev + 2;
-      });
-    }, 40);
-
-    return () => {
-      clearInterval(messageInterval);
-      clearInterval(progressInterval);
-    };
+    const interval = setInterval(() => {
+      setStepIndex(prev => (prev < STEPS.length - 1 ? prev + 1 : prev));
+    }, 1800);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center">
-        <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 rounded-full mb-6">
-            <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Analyzing Your Marketing...
-          </h2>
-          <p className="text-slate-600 text-lg min-h-[28px] transition-all">
-            {statusMessages[currentMessage]}
-          </p>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+      <div className="text-center max-w-md w-full">
+        <div className="relative inline-flex items-center justify-center mb-8">
+          <div className="w-20 h-20 rounded-full border-4 border-slate-800" />
+          <div className="absolute w-20 h-20 rounded-full border-4 border-transparent border-t-emerald-500 animate-spin" />
+          <div className="absolute w-12 h-12 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin" style={{ animationDuration: '1.2s', animationDirection: 'reverse' }} />
         </div>
 
-        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-300 ease-out rounded-full"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Scanning your website...
+        </h2>
+        <p className="text-slate-400 text-sm mb-10">
+          Running a live audit via Google PageSpeed Insights. This takes 5–10 seconds.
+        </p>
 
-        <div className="mt-4 text-sm text-slate-500">
-          {progress}% Complete
+        <div className="space-y-3">
+          {STEPS.map((step, i) => (
+            <div
+              key={step}
+              className={`flex items-center gap-3 text-sm transition-all duration-500 ${
+                i < stepIndex
+                  ? 'text-emerald-400'
+                  : i === stepIndex
+                  ? 'text-white'
+                  : 'text-slate-700'
+              }`}
+            >
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${
+                i < stepIndex
+                  ? 'bg-emerald-400'
+                  : i === stepIndex
+                  ? 'bg-white animate-pulse'
+                  : 'bg-slate-700'
+              }`} />
+              {step}
+            </div>
+          ))}
         </div>
       </div>
     </div>

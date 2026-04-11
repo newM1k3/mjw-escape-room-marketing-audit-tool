@@ -6,8 +6,8 @@ export interface AuditCheck {
 export interface AuditCategory {
   name: string;
   score: number;
-  checks: AuditCheck[];
   icon: string;
+  checks: AuditCheck[];
 }
 
 export interface AuditResult {
