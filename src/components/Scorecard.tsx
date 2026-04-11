@@ -1,166 +1,94 @@
-import { Globe, MapPin, Share2, Star, CheckCircle2, XCircle, RotateCcw, TrendingUp } from 'lucide-react';
+import { ArrowRight, RefreshCw, ShieldAlert, CheckCircle2, XCircle, MapPin, Globe, Share2, Star } from 'lucide-react';
 import { AuditResult, AuditCategory } from '../types/audit';
 
-interface ScorecardProps {
-  result: AuditResult;
-  onReset: () => void;
-}
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { MapPin, Globe, Share2, Star };
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Globe,
-  MapPin,
-  Share2,
-  Star,
+const CategoryCard = ({ category }: { category: AuditCategory }) => {
+  const Icon = iconMap[category.icon] || MapPin;
+  const isGood = category.score >= 80;
+  const isWarn = category.score >= 50 && category.score < 80;
+  const colorClass = isGood ? 'text-emerald-400' : isWarn ? 'text-amber-400' : 'text-red-400';
+  const borderClass = isGood ? 'border-emerald-500/30' : isWarn ? 'border-amber-500/30' : 'border-red-500/30';
+  const bgClass = isGood ? 'bg-emerald-500/10' : isWarn ? 'bg-amber-500/10' : 'bg-red-500/10';
+
+  return (
+    <div className={`bg-slate-900 rounded-xl border ${borderClass} p-6 relative overflow-hidden`}>
+      <div className={`absolute top-0 right-0 w-32 h-32 ${bgClass} blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none`} />
+      <div className="flex items-start justify-between mb-6 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className={`p-3 rounded-lg bg-slate-950 border ${borderClass}`}>
+            <Icon className={`w-5 h-5 ${colorClass}`} />
+          </div>
+          <h3 className="font-bold text-white text-lg">{category.name}</h3>
+        </div>
+        <div className={`text-3xl font-black ${colorClass}`}>{category.score}</div>
+      </div>
+      <div className="space-y-3 relative z-10">
+        {category.checks.map((check, i) => (
+          <div key={i} className="flex items-start gap-3 text-sm">
+            {check.passed ? <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" /> : <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />}
+            <span className={check.passed ? 'text-slate-300' : 'text-slate-500'}>{check.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-function scoreColor(score: number) {
-  if (score >= 75) return 'text-emerald-400';
-  if (score >= 50) return 'text-amber-400';
-  return 'text-red-400';
-}
-
-function scoreBg(score: number) {
-  if (score >= 75) return 'bg-emerald-500/10 border-emerald-500/20';
-  if (score >= 50) return 'bg-amber-500/10 border-amber-500/20';
-  return 'bg-red-500/10 border-red-500/20';
-}
-
-function scoreLabel(score: number) {
-  if (score >= 75) return 'Strong';
-  if (score >= 50) return 'Needs Work';
-  return 'Critical';
-}
-
-function OverallRing({ score }: { score: number }) {
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-  const color = score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+export const Scorecard = ({ result, onReset }: { result: AuditResult; onReset: () => void }) => {
+  const isGood = result.overallScore >= 80;
+  const isWarn = result.overallScore >= 50 && result.overallScore < 80;
+  const colorClass = isGood ? 'text-emerald-400' : isWarn ? 'text-amber-400' : 'text-red-400';
+  const strokeClass = isGood ? 'text-emerald-500' : isWarn ? 'text-amber-500' : 'text-red-500';
+  const label = isGood ? 'Secure' : isWarn ? 'Vulnerable' : 'Critical Risk';
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width="140" height="140" className="-rotate-90">
-        <circle cx="70" cy="70" r={radius} stroke="#1e293b" strokeWidth="10" fill="none" />
-        <circle
-          cx="70"
-          cy="70"
-          r={radius}
-          stroke={color}
-          strokeWidth="10"
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 1s ease' }}
-        />
-      </svg>
-      <div className="absolute text-center">
-        <div className={`text-4xl font-extrabold ${scoreColor(score)}`}>{score}</div>
-        <div className="text-slate-500 text-xs">/ 100</div>
-      </div>
-    </div>
-  );
-}
-
-function CategoryCard({ category }: { category: AuditCategory }) {
-  const Icon = ICON_MAP[category.icon] ?? Globe;
-
-  return (
-    <div className={`bg-slate-900 border rounded-xl p-5 ${scoreBg(category.score)}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
-            <Icon className="w-4 h-4 text-slate-400" />
+    <div className="min-h-screen bg-slate-950 py-16 px-4 relative">
+      <div className="max-w-5xl mx-auto relative z-10">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 px-4 py-2 rounded-full text-sm font-mono mb-6 uppercase tracking-widest">
+            <ShieldAlert className="w-4 h-4 text-emerald-500" /> Assessment Complete
           </div>
-          <span className="text-white font-semibold text-sm">{category.name}</span>
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-4 uppercase tracking-tight">Threat Report</h1>
+          <p className="text-xl text-emerald-400 font-mono">{result.businessName}</p>
         </div>
-        <div className="text-right">
-          <div className={`text-2xl font-bold ${scoreColor(category.score)}`}>{category.score}</div>
-          <div className={`text-xs font-medium ${scoreColor(category.score)}`}>{scoreLabel(category.score)}</div>
-        </div>
-      </div>
 
-      <div className="w-full bg-slate-800 rounded-full h-1.5 mb-4">
-        <div
-          className={`h-1.5 rounded-full transition-all duration-700 ${
-            category.score >= 75 ? 'bg-emerald-500' : category.score >= 50 ? 'bg-amber-500' : 'bg-red-500'
-          }`}
-          style={{ width: `${category.score}%` }}
-        />
-      </div>
-
-      <ul className="space-y-2">
-        {category.checks.map((check, i) => (
-          <li key={i} className="flex items-start gap-2 text-xs">
-            {check.passed ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-            ) : (
-              <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-            )}
-            <span className={check.passed ? 'text-slate-300' : 'text-slate-500'}>{check.label}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export const Scorecard = ({ result, onReset }: ScorecardProps) => {
-  const categories = Object.values(result.categories);
-
-  return (
-    <div className="min-h-screen bg-slate-950 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-semibold tracking-wide uppercase">Audit Complete</span>
-          </div>
-
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-1">
-            {result.businessName}
-          </h2>
-          <p className="text-slate-400 mb-8">Marketing Visibility Report</p>
-
-          <OverallRing score={result.overallScore} />
-
-          <div className="mt-4">
-            <div className={`text-lg font-bold ${scoreColor(result.overallScore)}`}>
-              Overall Score: {scoreLabel(result.overallScore)}
+        <div className="flex justify-center mb-16">
+          <div className="relative">
+            <svg className="transform -rotate-90 w-48 h-48 drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+              <circle cx="96" cy="96" r="84" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-900" />
+              <circle cx="96" cy="96" r="84" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={`${2 * Math.PI * 84}`} strokeDashoffset={`${2 * Math.PI * 84 * (1 - result.overallScore / 100)}`} className={strokeClass} strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className={`text-5xl font-black ${colorClass}`}>{result.overallScore}</div>
+              <div className="text-xs font-mono text-slate-500 mt-1 uppercase tracking-widest">{label}</div>
             </div>
-            <p className="text-slate-500 text-sm mt-1">
-              {result.overallScore >= 75
-                ? 'Your online presence is strong. A few tweaks could push you to the top.'
-                : result.overallScore >= 50
-                ? 'You have a foundation, but key gaps are costing you bookings.'
-                : 'Critical issues detected. Fixing these could significantly increase revenue.'}
-            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {categories.map((category) => (
-            <CategoryCard key={category.name} category={category} />
-          ))}
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <CategoryCard category={result.categories.googleListing} />
+          <CategoryCard category={result.categories.websiteSeo} />
+          <CategoryCard category={result.categories.socialPresence} />
+          <CategoryCard category={result.categories.reviewVelocity} />
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-8 text-center">
-          <h3 className="text-white font-bold text-lg mb-2">Want a Full Action Plan?</h3>
-          <p className="text-slate-400 text-sm mb-4">
-            Book a free 15-minute strategy call and we'll walk through exactly how to fix your weak spots.
-          </p>
-          <button className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20">
-            Book Free Strategy Call
-          </button>
+        <div className="bg-slate-900 border border-emerald-900/50 rounded-2xl p-8 md:p-10 shadow-[0_0_40px_rgba(16,185,129,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="text-center md:text-left">
+              <h3 className="text-2xl font-bold text-white mb-3">Your Escape Room is Leaking Revenue</h3>
+              <p className="text-slate-400 max-w-xl">Get the exact blueprint to patch these vulnerabilities, dominate local search, and fill your empty slots. Download the full marketing playbook.</p>
+            </div>
+            <a href="#playbook-portal" className="flex-shrink-0 inline-flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-xl font-bold uppercase tracking-wide transition-all transform hover:-translate-y-1 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+              Get The Playbook <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
         </div>
 
-        <div className="text-center">
-          <button
-            onClick={onReset}
-            className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Audit another website
+        <div className="mt-12 text-center">
+          <button onClick={onReset} className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 font-mono text-sm uppercase tracking-widest transition-colors">
+            <RefreshCw className="w-4 h-4" /> Run New Scan
           </button>
         </div>
       </div>

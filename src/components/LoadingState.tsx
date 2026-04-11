@@ -1,62 +1,42 @@
 import { useEffect, useState } from 'react';
+import { Radar } from 'lucide-react';
 
-const STEPS = [
-  'Connecting to Google PageSpeed Insights...',
-  'Analyzing mobile performance...',
-  'Checking SSL and security headers...',
-  'Auditing SEO meta tags...',
-  'Calculating your scores...',
+const statusMessages = [
+  'Establishing connection to server...',
+  'Scanning website via Google PageSpeed Insights...',
+  'Analyzing mobile responsiveness...',
+  'Extracting SEO metadata...',
+  'Compiling performance metrics...',
 ];
 
 export const LoadingState = () => {
-  const [stepIndex, setStepIndex] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStepIndex(prev => (prev < STEPS.length - 1 ? prev + 1 : prev));
-    }, 1800);
-    return () => clearInterval(interval);
+    const messageInterval = setInterval(() => setCurrentMessage(p => (p + 1) % statusMessages.length), 1500);
+    const progressInterval = setInterval(() => setProgress(p => Math.min(p + 1, 100)), 60);
+    return () => { clearInterval(messageInterval); clearInterval(progressInterval); };
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-      <div className="text-center max-w-md w-full">
-        <div className="relative inline-flex items-center justify-center mb-8">
-          <div className="w-20 h-20 rounded-full border-4 border-slate-800" />
-          <div className="absolute w-20 h-20 rounded-full border-4 border-transparent border-t-emerald-500 animate-spin" />
-          <div className="absolute w-12 h-12 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin" style={{ animationDuration: '1.2s', animationDirection: 'reverse' }} />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 relative">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
+      <div className="max-w-md w-full text-center relative z-10">
+        <div className="mb-10 relative">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-slate-900 border border-emerald-900/50 rounded-full mb-6 relative">
+            <div className="absolute inset-0 rounded-full border-2 border-emerald-500/20 animate-ping" />
+            <Radar className="w-12 h-12 text-emerald-500 animate-[spin_3s_linear_infinite]" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3 tracking-widest uppercase">System Audit Active</h2>
+          <p className="text-emerald-400/80 font-mono text-sm h-6">{statusMessages[currentMessage]}</p>
         </div>
 
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Scanning your website...
-        </h2>
-        <p className="text-slate-400 text-sm mb-10">
-          Running a live audit via Google PageSpeed Insights. This takes 5–10 seconds.
-        </p>
-
-        <div className="space-y-3">
-          {STEPS.map((step, i) => (
-            <div
-              key={step}
-              className={`flex items-center gap-3 text-sm transition-all duration-500 ${
-                i < stepIndex
-                  ? 'text-emerald-400'
-                  : i === stepIndex
-                  ? 'text-white'
-                  : 'text-slate-700'
-              }`}
-            >
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${
-                i < stepIndex
-                  ? 'bg-emerald-400'
-                  : i === stepIndex
-                  ? 'bg-white animate-pulse'
-                  : 'bg-slate-700'
-              }`} />
-              {step}
-            </div>
-          ))}
+        <div className="w-full bg-slate-900 border border-slate-800 rounded-full h-2 mb-3 overflow-hidden">
+          <div className="h-full bg-emerald-500 transition-all duration-300 shadow-[0_0_10px_rgba(16,185,129,0.8)]" style={{ width: `${progress}%` }} />
         </div>
+        <div className="text-xs font-mono text-slate-500 text-right">{progress}%</div>
       </div>
     </div>
   );
