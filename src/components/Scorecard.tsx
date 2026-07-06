@@ -89,7 +89,7 @@ export const Scorecard = ({ result, onReset }: ScorecardProps) => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
               <h3 className="text-2xl font-bold mb-2">
-                Want a Full Marketing Playbook to Fix These Issues?
+                Want a Full Playbook to Fix These Issues?
               </h3>
               <p className="text-indigo-100">
                 Get personalized strategies, templates, and step-by-step guidance to improve your score.
