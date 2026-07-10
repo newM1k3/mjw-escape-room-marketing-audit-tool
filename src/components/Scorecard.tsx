@@ -14,12 +14,6 @@ export const Scorecard = ({ result, onReset }: ScorecardProps) => {
     return 'text-red-600';
   };
 
-  const getScoreBorderColor = (score: number): string => {
-    if (score >= 80) return 'border-emerald-600';
-    if (score >= 50) return 'border-yellow-600';
-    return 'border-red-600';
-  };
-
   const getScoreLabel = (score: number): string => {
     if (score >= 80) return 'Excellent';
     if (score >= 50) return 'Needs Work';
