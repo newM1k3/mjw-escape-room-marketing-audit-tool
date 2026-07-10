@@ -1,4 +1,4 @@
-import { AuditResult, AuditCategory } from '../types/audit';
+import { AuditResult } from '../types/audit';
 
 export interface SelfAssessmentAnswers {
   hasGbpClaimed: boolean;
